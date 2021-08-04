@@ -31,6 +31,7 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
+from tqdm import tqdm
 
 def setup_detectron2_predictors(silhouettes_from='densepose'):
     # Keypoint-RCNN
@@ -97,8 +98,8 @@ def predict_3D(input,
     if os.path.isdir(input):
         image_fnames = [f for f in sorted(os.listdir(input)) if f.endswith('.png') or
                         f.endswith('.jpg')]
-        for fname in image_fnames:
-            print("Predicting on:", fname)
+        for fname in tqdm(image_fnames):
+            # print("Predicting on:", fname)
             image = cv2.imread(os.path.join(input, fname))
             # Pre-process for 2D detectors
             image = pad_to_square(image)
@@ -154,30 +155,31 @@ def predict_3D(input,
             pred_reposed_vertices = pred_reposed_vertices.cpu().detach().numpy()[0]
             pred_cam_wp = pred_cam_wp.cpu().detach().numpy()[0]
 
-            if not os.path.isdir(os.path.join(input, 'verts_vis')):
-                os.makedirs(os.path.join(input, 'verts_vis'))
-            plt.figure()
-            plt.imshow(image[:,:,::-1])
-            plt.scatter(pred_vertices2d[:, 0], pred_vertices2d[:, 1], s=0.3)
-            plt.gca().set_axis_off()
-            plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-            plt.margins(0, 0)
-            plt.gca().xaxis.set_major_locator(plt.NullLocator())
-            plt.gca().yaxis.set_major_locator(plt.NullLocator())
-            plt.savefig(os.path.join(input, 'verts_vis', 'verts_'+fname))
+            if False:
+                if not os.path.isdir(os.path.join(input, 'verts_vis')):
+                    os.makedirs(os.path.join(input, 'verts_vis'))
+                plt.figure()
+                # plt.imshow(image[:,:,::-1])
+                plt.scatter(pred_vertices2d[:, 0], pred_vertices2d[:, 1], s=0.3)
+                plt.gca().set_axis_off()
+                plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+                plt.margins(0, 0)
+                plt.gca().xaxis.set_major_locator(plt.NullLocator())
+                plt.gca().yaxis.set_major_locator(plt.NullLocator())
+                plt.savefig(os.path.join(input, 'verts_vis', 'verts_'+fname))
 
-            if render_vis:
-                rend_img = wp_renderer.render(verts=pred_vertices, cam=pred_cam_wp, img=image)
-                rend_reposed_img = wp_renderer.render(verts=pred_reposed_vertices,
-                                                      cam=np.array([0.8, 0., -0.2]),
-                                                      angle=180,
-                                                      axis=[1, 0, 0])
-                if not os.path.isdir(os.path.join(input, 'rend_vis')):
-                    os.makedirs(os.path.join(input, 'rend_vis'))
-                cv2.imwrite(os.path.join(input, 'rend_vis', 'rend_'+fname), rend_img)
-                cv2.imwrite(os.path.join(input, 'rend_vis', 'reposed_'+fname), rend_reposed_img)
-            if save_proxy_vis:
-                if not os.path.isdir(os.path.join(input, 'proxy_vis')):
-                    os.makedirs(os.path.join(input, 'proxy_vis'))
-                cv2.imwrite(os.path.join(input, 'proxy_vis', 'silhouette_'+fname), silhouette_vis)
-                cv2.imwrite(os.path.join(input, 'proxy_vis', 'joints2D_'+fname), joints2D_vis)
+                if render_vis:
+                    rend_img = wp_renderer.render(verts=pred_vertices, cam=pred_cam_wp, img=image)
+                    rend_reposed_img = wp_renderer.render(verts=pred_reposed_vertices,
+                                                        cam=np.array([0.8, 0., -0.2]),
+                                                        angle=180,
+                                                        axis=[1, 0, 0])
+                    if not os.path.isdir(os.path.join(input, 'rend_vis')):
+                        os.makedirs(os.path.join(input, 'rend_vis'))
+                    cv2.imwrite(os.path.join(input, 'rend_vis', 'rend_'+fname), rend_img)
+                    cv2.imwrite(os.path.join(input, 'rend_vis', 'reposed_'+fname), rend_reposed_img)
+                if save_proxy_vis:
+                    if not os.path.isdir(os.path.join(input, 'proxy_vis')):
+                        os.makedirs(os.path.join(input, 'proxy_vis'))
+                    cv2.imwrite(os.path.join(input, 'proxy_vis', 'silhouette_'+fname), silhouette_vis)
+                    cv2.imwrite(os.path.join(input, 'proxy_vis', 'joints2D_'+fname), joints2D_vis)

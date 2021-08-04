@@ -16,7 +16,7 @@ def main(input_path, checkpoint_path, device, silhouettes_from):
     regressor.load_state_dict(checkpoint['best_model_state_dict'])
 
     predict_3D(input_path, regressor, device, silhouettes_from=silhouettes_from,
-               save_proxy_vis=True, render_vis=True)
+               save_proxy_vis=False, render_vis=False)
 
 
 if __name__ == '__main__':

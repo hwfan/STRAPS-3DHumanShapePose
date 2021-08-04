@@ -148,3 +148,4 @@ checkpoints/*
 data/*.npz
 
 demo/*vis
+detectron2/
